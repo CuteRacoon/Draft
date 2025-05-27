@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using System;
 
 public class MonsterSceneController : MonoBehaviour
 {
@@ -50,6 +51,7 @@ public class MonsterSceneController : MonoBehaviour
     }
     public void StartRunning()
     {
+        ForestActionController.RaiseCannotDisplayLampBar();
         basicBehaviour.StartGirlInMonsterSceneAnimation(0.5f, 0.5f);
         basicBehaviour.LockTempBehaviour(basicBehaviour.GetHashCode());
         Camera monsterCamera = cameraBehaviour.GetCameraByIndex(currentTriggerIndex);
@@ -60,7 +62,7 @@ public class MonsterSceneController : MonoBehaviour
     }
     void TeleportPlayer()
     {
-        if (currentTriggerIndex < 0 || currentTriggerIndex >= stayingGirls.Length-1)
+        if (currentTriggerIndex < 0 || currentTriggerIndex-1 >= stayingGirls.Length)
         {
             Debug.LogError("Некорректный индекс stayingGirl для телепортации.");
             return;
@@ -119,5 +121,6 @@ public class MonsterSceneController : MonoBehaviour
         }
         currentTriggerIndex = -1;
         yield return null;
+        ForestActionController.RaiseCanDisplayLampBar();
     }
 }

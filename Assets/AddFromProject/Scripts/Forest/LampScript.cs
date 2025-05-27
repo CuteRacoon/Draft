@@ -4,7 +4,7 @@ using System.Collections;
 public class LampController : MonoBehaviour
 {
     [Header("Настройки лампы")]
-    public bool CanUseLamp = true;              // Можно ли управлять лампой
+    public static bool CanUseLamp = true;              // Можно ли управлять лампой
     public GameObject lampObject;               // Сюда перетащить объект с лампой в инспекторе
     private Light lampLight;                   // Сам компонент Light
     private Material lampMaterial;
@@ -39,6 +39,20 @@ public class LampController : MonoBehaviour
                 lampLight.intensity = 0f;
                 lampObject.SetActive(false);
             }
+        }
+        BarScript.FuelLevelCritical += OnFuelCritical;
+        CanUseLamp = false;
+    }
+    private void OnDisable()
+    {
+        BarScript.FuelLevelCritical -= OnFuelCritical;
+    }
+    private void OnFuelCritical()
+    {
+        // Реакция на критический уровень топлива
+        if (lampLight != null)
+        {
+            lampLight.intensity = maxIntensity * 0.5f;
         }
     }
 
