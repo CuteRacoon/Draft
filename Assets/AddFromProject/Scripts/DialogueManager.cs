@@ -8,8 +8,8 @@ using System;
 public class DialogueManager : MonoBehaviour
 {
     
-    [SerializeField] private GameObject textPanel;
-    [SerializeField] private GameObject learningPanel;
+    public GameObject textPanel;
+    public GameObject learningPanel;
     [SerializeField] private TextAsset inkFile;
     [SerializeField] private GameObject choiceButtonsParent;
     [SerializeField] private GameObject personNameObj;
@@ -83,6 +83,11 @@ public class DialogueManager : MonoBehaviour
     {
         textPanel.SetActive(false);
         learningPanel.SetActive(false);
+    }
+    public void ShowAllPanels()
+    {
+        textPanel.SetActive(true);
+        learningPanel.SetActive(true);
     }
 
     public void PlayPartOfPlot(string knotName)

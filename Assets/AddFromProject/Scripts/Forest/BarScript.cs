@@ -12,12 +12,14 @@ public class BarScript : MonoBehaviour
 
     private float timer = 0f;
     private bool isRunning = true;
+    public bool IsFailure => isFailure;
     private bool isCriticalLevel = false;
+    private bool isFailure = false;
+    public bool IsCriticalLevel => isCriticalLevel;
     private GameObject parentObj;
 
     private Color normalColor;
     public Color criticalColor = new Color(0xF2 / 255f, 0xC9 / 255f, 0x89 / 255f); // F2C989
-    public static event Action FuelLevelCritical;
 
     private void Awake()
     {
@@ -36,22 +38,15 @@ public class BarScript : MonoBehaviour
             Debug.LogError("BarScript не нашел компонент Image внутри дочерних объектов!");
         }
         normalColor = barImage.color;
-        ForestActionController.CanDisplayLampBar += EnableBar;
-        ForestActionController.CannotDisplayLampBar += DisableBar;
         parentObj = transform.parent != null ? transform.parent.gameObject : null;
     }
-    private void Start()
-    {
-        ResetBar();
-    }
-    private void EnableBar()
+    public void EnableBar()
     {
         if (parentObj != null)
             parentObj.SetActive(true);
         ResumeBar();
     }
-
-    private void DisableBar()
+    public void DisableBar()
     {
         if (parentObj != null)
             parentObj.SetActive(false);
@@ -70,17 +65,20 @@ public class BarScript : MonoBehaviour
         {
             barImage.color = criticalColor;
             isCriticalLevel = true;
-            FuelLevelCritical?.Invoke();
         }
         if (fill <= 0f)
         {
             isRunning = false;
+            GameEvents.RaiseBarIsNull();
+            isFailure = true;
+            DisableBar();
             // можно вызвать событие или уведомление тут, если нужно
         }
     }
 
     public void ResetBar()
     {
+        EnableBar();
         timer = 0f;
         if (barImage != null)
         {
@@ -89,6 +87,7 @@ public class BarScript : MonoBehaviour
         }
         isCriticalLevel = false;
         isRunning = true;
+        isFailure = false;
     }
     public void StopBar()
     {

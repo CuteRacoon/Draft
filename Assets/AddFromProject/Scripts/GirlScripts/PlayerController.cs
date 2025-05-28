@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     private Animator animator;
+    private BasicBehaviour basicBehaviour;
     private bool canMove = true;
     private bool playerInsideOfTrigger = false;
     private bool isPositionLocked = false;
@@ -19,6 +20,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        basicBehaviour = FindAnyObjectByType<BasicBehaviour>();
     }
     public bool GetPlayerInside()
     {
@@ -35,6 +37,17 @@ public class PlayerController : MonoBehaviour
         animator.enabled = state;
         gameObject.GetComponent<BasicBehaviour>().enabled = state;
         gameObject.SetActive(state);
+    }
+    public void SetPlayerControl(bool state)
+    {
+        if (!state)
+        {
+            basicBehaviour.DisablePlayerControl();
+        }
+        else
+        {
+             basicBehaviour.EnablePlayerControl();
+        }
     }
     public void SetTransform(Transform trans)
     {

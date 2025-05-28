@@ -1,10 +1,11 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
-public class LampController : MonoBehaviour
+public class LampScript : MonoBehaviour
 {
     [Header("Настройки лампы")]
-    public static bool CanUseLamp = true;              // Можно ли управлять лампой
+    public bool CanUseLamp = true;              // Можно ли управлять лампой
     public GameObject lampObject;               // Сюда перетащить объект с лампой в инспекторе
     private Light lampLight;                   // Сам компонент Light
     private Material lampMaterial;
@@ -14,6 +15,7 @@ public class LampController : MonoBehaviour
     private Color initialEmissionColor;
 
     private bool isLampOn = false;
+    public bool IsLampOn => isLampOn;
     private Coroutine fadeCoroutine;
     void Start()
     {
@@ -40,25 +42,35 @@ public class LampController : MonoBehaviour
                 lampObject.SetActive(false);
             }
         }
-        BarScript.FuelLevelCritical += OnFuelCritical;
         CanUseLamp = false;
     }
-    private void OnDisable()
+    public void ResetIntensity()
     {
-        BarScript.FuelLevelCritical -= OnFuelCritical;
+        lampLight.intensity = maxIntensity;
     }
-    private void OnFuelCritical()
+    public void OnFuelCritical()
     {
         // Реакция на критический уровень топлива
         if (lampLight != null)
         {
-            lampLight.intensity = maxIntensity * 0.5f;
+            lampLight.intensity = maxIntensity * 0.3f;
         }
     }
 
     void Update()
     {
         if (CanUseLamp && Input.GetKeyDown(KeyCode.F))
+        {
+            if (fadeCoroutine != null)
+            {
+                StopCoroutine(fadeCoroutine);
+            }
+            StartCoroutine(ToggleLamp());
+        }
+    }
+    public void ChangeLampState(bool state)
+    {
+        if (isLampOn != state) // состояние отличается от ожидаемого state
         {
             if (fadeCoroutine != null)
             {
@@ -75,8 +87,12 @@ public class LampController : MonoBehaviour
             Debug.LogWarning("LampController: Не все компоненты назначены.");
             yield break;
         }
-
         isLampOn = !isLampOn;
+        if (isLampOn)
+        {
+            GameEvents.RaiseLampStateChanging();
+        }
+
         float startIntensity = lampLight.intensity;
         float endIntensity = isLampOn ? maxIntensity : 0f;
 
@@ -107,6 +123,7 @@ public class LampController : MonoBehaviour
         if (!isLampOn)
         {
             lampObject.SetActive(false);
+            GameEvents.RaiseLampStateChanging();
         }
     }
 }

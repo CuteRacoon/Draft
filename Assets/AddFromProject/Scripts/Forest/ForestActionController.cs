@@ -5,54 +5,102 @@ using UnityEngine.UI;
 
 public class ForestActionController : MonoBehaviour
 {
-    private DialogueManager dialogueController;
-    public static event Action CanDisplayLampBar;
-    public static event Action CannotDisplayLampBar;
+    private DialogueManager dialogueManager;
+    private LampController lampController;
+    private PlayerController playerController;
+    private CameraManager cameraManager;
 
-    public static void RaiseCanDisplayLampBar() => CanDisplayLampBar?.Invoke();
-    public static void RaiseCannotDisplayLampBar() => CannotDisplayLampBar?.Invoke();
+    private bool lampState;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        dialogueController = FindAnyObjectByType<DialogueManager>();
+        cameraManager = FindAnyObjectByType<CameraManager>();
+        dialogueManager = FindAnyObjectByType<DialogueManager>();
+        lampController = FindAnyObjectByType<LampController>();
+        playerController = FindAnyObjectByType<PlayerController>();
+
         StartCoroutine(DialogueCoroutine());
     }
 
     private IEnumerator DialogueCoroutine()
     {
-        RaiseCannotDisplayLampBar();
+        GameEvents.RaiseCannotDisplayLampBar();
         yield return new WaitForSeconds(4f);
-        dialogueController.PlayPartOfPlot("girl_thoughts");
-        while (dialogueController.IsDialoguePlaying)
+        dialogueManager.PlayPartOfPlot("girl_thoughts");
+        while (dialogueManager.IsDialoguePlaying)
         {
             yield return null;
         }
         StartCoroutine(StartLampLearning());
     }
+    public void HidePerson(int cameraIndex)
+    {
+        StartCoroutine(StartHideCoroutine(cameraIndex));
+    }
+    IEnumerator StartHideCoroutine(int cameraIndex)
+    {
+        lampState = lampController.IsLampOn;
+
+        playerController.SetPlayerControl(false);
+        playerController.SetMovement(false);
+        lampController.DisableLampBar();
+        lampController.StateCanUseLamp(false);
+        lampController.ChangeLampState(false);
+
+        cameraManager.SwitchCamera(4);
+        Animation anime = cameraManager.GetCameraByIndex(4).GetComponent<Animation>();
+        anime.enabled = true; // запускаем анимацию
+        anime.Play("HideAnimation");
+
+        // Ждём, пока длительность клипа не пройдёт
+        yield return new WaitForSeconds(2.5f);
+        cameraManager.SwitchCamera(cameraIndex);
+
+    }
+    public void ShowPerson()
+    {
+        cameraManager.SwitchCamera(0);
+        lampController.StateCanUseLamp(true);
+        playerController.SetPlayerControl(true);
+        playerController.SetMovement(true);
+        lampController.ChangeLampState(lampState);
+    }
     private IEnumerator StartLampLearning()
     {
-        dialogueController.LearningPanelText("Для того, чтобы зажечь лампу, нажмите F");
-        LampController.CanUseLamp = true;
+        playerController.SetPlayerControl(false);
+
+        dialogueManager.LearningPanelText("Для того, чтобы зажечь лампу, нажмите F");
+        lampController.StateCanUseLamp(true);
         yield return null;
 
-        // Ждём, пока игрок зажжёт лампу
-        bool lighted = false;
-        while (!lighted)
+        while (!lampController.IsLampOn)
         {
-            // Проверяем нажатие клавиши F
-            if (Input.GetKeyDown(KeyCode.F))
-                lighted = true;
             yield return null;
         }
+        lampController.StateCanUseLamp(false);
+
         // Подождать ещё 0.5 секунды перед скрытием
         yield return new WaitForSeconds(0.5f);
-        dialogueController.HideAllPanels();
+        dialogueManager.HideAllPanels();
 
-        yield return new WaitForSeconds(3f);
-        dialogueController.LearningPanelText("Однако топливо в лампе не бесконечно. Шкала топлива подскажет");
-        RaiseCanDisplayLampBar();
+        yield return new WaitForSeconds(1.5f);
+        dialogueManager.LearningPanelText("Однако топливо в лампе не бесконечно. Шкала топлива подскажет");
+        GameEvents.RaiseCanDisplayLampBar();
+        lampController.ChangeLampState(true);
+
+        yield return new WaitForSeconds(0.1f);
+
+        lampController.StopLampBar();
+
         yield return new WaitForSeconds(4f);
-        dialogueController.HideAllPanels();
+        dialogueManager.HideAllPanels();
+
+        lampController.StateCanUseLamp(true);
+
+        lampController.ResumeLampBar();
+        lampController.LearningCompleted();
+
+        playerController.SetPlayerControl(true);
     }
 }

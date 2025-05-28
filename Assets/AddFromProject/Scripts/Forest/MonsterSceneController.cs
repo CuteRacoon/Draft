@@ -11,14 +11,13 @@ public class MonsterSceneController : MonoBehaviour
     public Transform stayingGirlParentObj;
     private Transform[] stayingGirls;
 
-    private Transform stayingGirlTrans;
     private CameraManager cameraBehaviour;
     private CameraFollowScript cameraFollowScript;
 
     public float teleportDistanceZ = 20f;
     public float runDuration = 3f;
 
-    private TriggerController currentTrigger;
+    private MonsterTriggerController currentTrigger;
     private int currentTriggerIndex = -1;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -38,20 +37,20 @@ public class MonsterSceneController : MonoBehaviour
             stayingGirls[i] = child;
             child.gameObject.SetActive(false);
         }
-        TriggerController.OnPlayerEnterTrigger += HandlePlayerEnterTrigger;
+        MonsterTriggerController.OnMonsterTriggerEnter += HandlePlayerEnterTrigger;
     }
     void OnDestroy()
     {
-        TriggerController.OnPlayerEnterTrigger -= HandlePlayerEnterTrigger;
+        MonsterTriggerController.OnMonsterTriggerEnter -= HandlePlayerEnterTrigger;
     }
-    void HandlePlayerEnterTrigger(TriggerController trigger)
+    void HandlePlayerEnterTrigger(MonsterTriggerController trigger)
     {
         currentTrigger = trigger;
         currentTriggerIndex = trigger.index;
     }
     public void StartRunning()
     {
-        ForestActionController.RaiseCannotDisplayLampBar();
+        GameEvents.RaiseCannotDisplayLampBar();
         basicBehaviour.StartGirlInMonsterSceneAnimation(0.5f, 0.5f);
         basicBehaviour.LockTempBehaviour(basicBehaviour.GetHashCode());
         Camera monsterCamera = cameraBehaviour.GetCameraByIndex(currentTriggerIndex);
@@ -121,6 +120,6 @@ public class MonsterSceneController : MonoBehaviour
         }
         currentTriggerIndex = -1;
         yield return null;
-        ForestActionController.RaiseCanDisplayLampBar();
+        GameEvents.RaiseCanDisplayLampBar();
     }
 }

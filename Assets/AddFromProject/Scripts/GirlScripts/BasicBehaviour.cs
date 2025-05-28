@@ -31,6 +31,8 @@ public class BasicBehaviour : MonoBehaviour
     private float lockStartTime;
     private const float maxLockDuration = 2f;
 
+    private bool inputLocked = false;  // Новый флаг
+
     // Catscene variables
     private bool inCutscene = false;
     // Get current horizontal and vertical axes.
@@ -91,17 +93,22 @@ public class BasicBehaviour : MonoBehaviour
         }
         // Store the input axes.
         // Get input only when NOT in cutscene
-        if (!inCutscene)
-        {
+        if(!inCutscene && !inputLocked)
+{
             h = Input.GetAxis("Horizontal");
             v = Input.GetAxis("Vertical");
             sprint = Input.GetKey(KeyCode.LeftShift);
         }
-        else
+        else if (inCutscene)
         {
-            // Use cutscene values when in cutscene
             h = cutsceneH;
             v = cutsceneV;
+        }
+        else
+        {
+            h = 0;
+            v = 0;
+            sprint = false;
         }
 
         // Set the input axes on the Animator Controller.
@@ -378,6 +385,18 @@ public class BasicBehaviour : MonoBehaviour
     {
         Ray ray = new Ray(this.transform.position + Vector3.up * (2 * colExtents.x), Vector3.down);
         return Physics.SphereCast(ray, colExtents.x, colExtents.x + 0.2f);
+    }
+    public void DisablePlayerControl()
+    {
+        inputLocked = true;
+        h = 0;
+        v = 0;
+        anim.SetFloat(hFloat, 0);
+        anim.SetFloat(vFloat, 0);
+    }
+    public void EnablePlayerControl()
+    {
+        inputLocked = false;
     }
 }
 
