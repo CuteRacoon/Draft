@@ -18,6 +18,8 @@ public class MonsterSceneController : MonoBehaviour
 
     private MonsterTriggerController currentTrigger;
     private int currentTriggerIndex = -1;
+    private bool lampState;
+    private GameObject canvasObj;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -44,10 +46,13 @@ public class MonsterSceneController : MonoBehaviour
     {
         currentTrigger = trigger;
         currentTriggerIndex = trigger.index;
+        lampState = LampController.Instance.IsLampOn;
+
+        canvasObj = currentTrigger.transform.GetChild(0).gameObject;
     }
     public void StartRunning()
     {
-        GameEvents.RaiseCannotDisplayLampBar();
+        if (lampState) GameEvents.RaiseCannotDisplayLampBar();
         basicBehaviour.StartGirlInMonsterSceneAnimation(0.5f, 0.5f);
         basicBehaviour.LockTempBehaviour(basicBehaviour.GetHashCode());
         
@@ -88,6 +93,7 @@ public class MonsterSceneController : MonoBehaviour
     {
         // 1.Переключаем камеру
         ForestCameraManager.Instance.SwitchToMonsterCamera(currentTriggerIndex);
+        canvasObj.SetActive(true);
 
         // 2. Телепортируем игрока
         TeleportPlayer();
@@ -117,6 +123,11 @@ public class MonsterSceneController : MonoBehaviour
         }
         currentTriggerIndex = -1;
         yield return null;
-        GameEvents.RaiseCanDisplayLampBar();
+        if (lampState)
+        {
+            GameEvents.RaiseCanDisplayLampBar();
+        }
+        canvasObj.SetActive(false);
+        canvasObj = null;
     }
 }

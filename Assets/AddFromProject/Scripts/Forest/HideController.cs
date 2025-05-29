@@ -59,7 +59,7 @@ public class HideController : MonoBehaviour
         anime.Play("HideAnimation");
 
         // ∆дЄм, пока длительность клипа не пройдЄт
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(4.1f);
         actualIndex = currentTriggerIndex * 2 + 1;
         ForestCameraManager.Instance.SwitchToHidingCamera(actualIndex);
     }

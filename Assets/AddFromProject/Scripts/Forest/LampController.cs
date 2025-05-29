@@ -13,6 +13,17 @@ public class LampController : MonoBehaviour
     public bool IsLampOn => lampScript.IsLampOn;
 
     private LampTriggerController trigger;
+    public static LampController Instance { get; private set; }
+    private void Awake()
+    {
+        // Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        Instance = this;
+    }
     private void Start()
     {
         lampScript = FindAnyObjectByType<LampScript>();

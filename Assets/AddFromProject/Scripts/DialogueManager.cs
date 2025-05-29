@@ -106,6 +106,7 @@ public class DialogueManager : MonoBehaviour
         else Debug.Log("Корутина и так нулевая");
 
         isDialoguePlaying = false;
+        choiceButtonsParent.SetActive(false);
         HideAllPanels();
     }
     private IEnumerator PlayKnot(string knotName, bool isDelayNeeded)
