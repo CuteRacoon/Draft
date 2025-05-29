@@ -68,16 +68,15 @@ public class LampScript : MonoBehaviour
             StartCoroutine(ToggleLamp());
         }
     }
-    public void ChangeLampState(bool state)
+    public void SetLampState(bool state)
     {
-        if (isLampOn != state) // состояние отличается от ожидаемого state
+        if (isLampOn == state)
+            return;
+        if (fadeCoroutine != null)
         {
-            if (fadeCoroutine != null)
-            {
-                StopCoroutine(fadeCoroutine);
-            }
-            StartCoroutine(ToggleLamp());
+            StopCoroutine(fadeCoroutine);
         }
+        StartCoroutine(ToggleLamp());
     }
 
     IEnumerator ToggleLamp()

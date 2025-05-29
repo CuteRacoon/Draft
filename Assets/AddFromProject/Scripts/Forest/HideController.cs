@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using System.Collections;
 
 public class HideController : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class HideController : MonoBehaviour
     private ForestActionController action;
 
     private bool isHidden = false;
+    private int currentTriggerIndex = -1;
 
     private bool playerInsideTrigger = false;
 
@@ -23,6 +25,7 @@ public class HideController : MonoBehaviour
     private void OnPlayerEnterHideZone(HideTriggerController currentTrigger)
     {
         trigger = currentTrigger;
+        currentTriggerIndex = trigger.index;
         playerInsideTrigger = true;
 
         canvas = trigger.GetComponentInChildren<Canvas>(true);
@@ -35,8 +38,9 @@ public class HideController : MonoBehaviour
             if (!isHidden)
             {
                 isHidden = true;
-                action.HidePerson(trigger.index+2);
+                action.HidePerson();
                 canvas.gameObject.SetActive(false);
+                StartCoroutine(StartHidePerson());
             }
             else
             {
@@ -46,6 +50,19 @@ public class HideController : MonoBehaviour
             }
         }
     }
+    private IEnumerator StartHidePerson()
+    {
+        int actualIndex = currentTriggerIndex * 2;
+        ForestCameraManager.Instance.SwitchToHidingCamera(actualIndex);
+        Animation anime = ForestCameraManager.Instance.GetCurrentCamera().GetComponent<Animation>();
+        anime.enabled = true; // запускаем анимацию
+        anime.Play("HideAnimation");
+
+        // ∆дЄм, пока длительность клипа не пройдЄт
+        yield return new WaitForSeconds(2.5f);
+        actualIndex = currentTriggerIndex * 2 + 1;
+        ForestCameraManager.Instance.SwitchToHidingCamera(actualIndex);
+    }
     private void OnPlayerExitHideZone(HideTriggerController currentTrigger)
     {
         if (canvas.gameObject.activeSelf)
@@ -54,5 +71,6 @@ public class HideController : MonoBehaviour
         }
         trigger = null;
         playerInsideTrigger = false;
+        currentTriggerIndex = -1;
     }
 }

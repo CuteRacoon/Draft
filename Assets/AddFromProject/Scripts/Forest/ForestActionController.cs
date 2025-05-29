@@ -8,37 +8,49 @@ public class ForestActionController : MonoBehaviour
     private DialogueManager dialogueManager;
     private LampController lampController;
     private PlayerController playerController;
-    private CameraManager cameraManager;
 
     private bool lampState;
+    public static ForestActionController Instance { get; private set; }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        cameraManager = FindAnyObjectByType<CameraManager>();
         dialogueManager = FindAnyObjectByType<DialogueManager>();
         lampController = FindAnyObjectByType<LampController>();
         playerController = FindAnyObjectByType<PlayerController>();
 
         StartCoroutine(DialogueCoroutine());
     }
+    private void Awake()
+    {
+        // Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     private IEnumerator DialogueCoroutine()
     {
-        GameEvents.RaiseCannotDisplayLampBar();
+        /*GameEvents.RaiseCannotDisplayLampBar();
         yield return new WaitForSeconds(4f);
         dialogueManager.PlayPartOfPlot("girl_thoughts");
         while (dialogueManager.IsDialoguePlaying)
         {
             yield return null;
         }
-        StartCoroutine(StartLampLearning());
+        StartCoroutine(StartLampLearning());*/
+
+        // при билде убрать, раскомментить обучение
+        GameEvents.RaiseCannotDisplayLampBar();
+        yield return new WaitForSeconds(0.5f);
+        lampController.StateCanUseLamp(true);
+        lampController.LearningCompleted();
+
     }
-    public void HidePerson(int cameraIndex)
-    {
-        StartCoroutine(StartHideCoroutine(cameraIndex));
-    }
-    IEnumerator StartHideCoroutine(int cameraIndex)
+    public void HidePerson()
     {
         lampState = lampController.IsLampOn;
 
@@ -46,25 +58,15 @@ public class ForestActionController : MonoBehaviour
         playerController.SetMovement(false);
         lampController.DisableLampBar();
         lampController.StateCanUseLamp(false);
-        lampController.ChangeLampState(false);
-
-        cameraManager.SwitchCamera(4);
-        Animation anime = cameraManager.GetCameraByIndex(4).GetComponent<Animation>();
-        anime.enabled = true; // запускаем анимацию
-        anime.Play("HideAnimation");
-
-        // ∆дЄм, пока длительность клипа не пройдЄт
-        yield return new WaitForSeconds(2.5f);
-        cameraManager.SwitchCamera(cameraIndex);
-
+        lampController.SetLampState(false); // выключить, если включена
     }
     public void ShowPerson()
     {
-        cameraManager.SwitchCamera(0);
+        ForestCameraManager.Instance.SwitchToPlayerCamera();
         lampController.StateCanUseLamp(true);
         playerController.SetPlayerControl(true);
         playerController.SetMovement(true);
-        lampController.ChangeLampState(lampState);
+        lampController.SetLampState(lampState); //вернуть лампу в изначальное положение
     }
     private IEnumerator StartLampLearning()
     {
@@ -84,16 +86,15 @@ public class ForestActionController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         dialogueManager.HideAllPanels();
 
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(1f);
         dialogueManager.LearningPanelText("ќднако топливо в лампе не бесконечно. Ўкала топлива подскажет");
         GameEvents.RaiseCanDisplayLampBar();
-        lampController.ChangeLampState(true);
 
         yield return new WaitForSeconds(0.1f);
 
         lampController.StopLampBar();
 
-        yield return new WaitForSeconds(4f);
+        yield return new WaitForSeconds(5f);
         dialogueManager.HideAllPanels();
 
         lampController.StateCanUseLamp(true);

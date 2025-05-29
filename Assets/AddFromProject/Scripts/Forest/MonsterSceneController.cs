@@ -11,7 +11,6 @@ public class MonsterSceneController : MonoBehaviour
     public Transform stayingGirlParentObj;
     private Transform[] stayingGirls;
 
-    private CameraManager cameraBehaviour;
     private CameraFollowScript cameraFollowScript;
 
     public float teleportDistanceZ = 20f;
@@ -25,8 +24,6 @@ public class MonsterSceneController : MonoBehaviour
     {
         playerController = girlComponent.GetComponentInChildren<PlayerController>();
         basicBehaviour = girlComponent.GetComponentInChildren<BasicBehaviour>();
-        //girlMovementAnime = girlComponent.GetComponentInChildren<Animation>();
-        cameraBehaviour = FindAnyObjectByType<CameraManager>();
         cameraFollowScript = FindAnyObjectByType<CameraFollowScript>();
 
         int childCount = stayingGirlParentObj.childCount;
@@ -53,7 +50,7 @@ public class MonsterSceneController : MonoBehaviour
         GameEvents.RaiseCannotDisplayLampBar();
         basicBehaviour.StartGirlInMonsterSceneAnimation(0.5f, 0.5f);
         basicBehaviour.LockTempBehaviour(basicBehaviour.GetHashCode());
-        Camera monsterCamera = cameraBehaviour.GetCameraByIndex(currentTriggerIndex);
+        
     }
     public void StopRunning()
     {
@@ -61,13 +58,13 @@ public class MonsterSceneController : MonoBehaviour
     }
     void TeleportPlayer()
     {
-        if (currentTriggerIndex < 0 || currentTriggerIndex-1 >= stayingGirls.Length)
+        if (currentTriggerIndex < 0 || currentTriggerIndex >= stayingGirls.Length)
         {
             Debug.LogError("Некорректный индекс stayingGirl для телепортации.");
             return;
         }
 
-        Transform targetGirl = stayingGirls[currentTriggerIndex-1];
+        Transform targetGirl = stayingGirls[currentTriggerIndex];
         if (targetGirl == null)
         {
             Debug.LogError("Не удалось найти stayingGirl по индексу.");
@@ -90,7 +87,7 @@ public class MonsterSceneController : MonoBehaviour
     IEnumerator PlayGirlAnimation()
     {
         // 1.Переключаем камеру
-        cameraBehaviour.SwitchCamera(currentTriggerIndex);
+        ForestCameraManager.Instance.SwitchToMonsterCamera(currentTriggerIndex);
 
         // 2. Телепортируем игрока
         TeleportPlayer();
@@ -100,8 +97,7 @@ public class MonsterSceneController : MonoBehaviour
 
         // 4. Получаем длительность анимации камеры
         float waitTime = runDuration;
-        Camera monsterCamera = cameraBehaviour.GetCameraByIndex(currentTriggerIndex);
-        Animation cameraAnimation = monsterCamera.GetComponent<Animation>();
+        Animation cameraAnimation = ForestCameraManager.Instance.GetCurrentCamera().GetComponent<Animation>();
         if (cameraAnimation != null && cameraAnimation.clip != null)
         {
             waitTime = cameraAnimation.clip.length;
@@ -111,7 +107,8 @@ public class MonsterSceneController : MonoBehaviour
 
         // 5. Останавливаем бег и возвращаем управление игроку
         StopRunning();
-        cameraBehaviour.SwitchCamera(0);
+        ForestCameraManager.Instance.SwitchToPlayerCamera();
+
         cameraFollowScript.SetTargetPosition();
         if (currentTrigger != null)
         {

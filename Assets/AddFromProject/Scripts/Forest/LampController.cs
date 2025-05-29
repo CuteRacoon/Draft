@@ -31,9 +31,9 @@ public class LampController : MonoBehaviour
         GameEvents.LampStateChanging += HandleLampStateChanging;
         GameEvents.BarIsNull += HandleBarNull;
     }
-    private void HandleBarNull()
+    private void HandleBarNull() // при достижении 0 заряда - выключить лампу
     {
-        lampScript.ChangeLampState(false);
+        SetLampState(false);
         StateCanUseLamp(false);
     }
 
@@ -90,18 +90,16 @@ public class LampController : MonoBehaviour
         }
         previousCriticalState = isNowCritical;
     }
-    public void ChangeLampState(bool state)
+    public void SetLampState(bool state)
     {
-
-        lampScript.ChangeLampState(state);
+        lampScript.SetLampState(state);
     }
     public void ResetBarAndFuel()
     {
         barScript.ResetBar();
         StateCanUseLamp(true);
         lampScript.ResetIntensity();
-        lampScript.ChangeLampState(true);
-
+        SetLampState(true); // включить лампу
     }
     public void DisableLampBar()
     {
