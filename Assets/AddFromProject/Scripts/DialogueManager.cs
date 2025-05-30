@@ -137,7 +137,6 @@ public class DialogueManager : MonoBehaviour
         delay = neededDelay;
         dialogueCoroutine = StartCoroutine(PlayKnot(knotName, true));
     }
-
     private IEnumerator PlayMonologue()
     {
         isDialoguePlaying = true;

@@ -1,8 +1,12 @@
 using UnityEngine;
+using System.Collections;
 
 public class LampController : MonoBehaviour
 {
     [SerializeField] private BarScript barScript;
+    [SerializeField] private Material lampMaterial;
+    private Coroutine emissionCoroutine;
+    private Color targetEmissionColor = new Color(25f / 255f, 0f, 2f / 255f);
 
     private bool playerInsideTrigger = false;
     private LampScript lampScript;
@@ -10,6 +14,7 @@ public class LampController : MonoBehaviour
     private bool previousCriticalState = false;
     private bool learningCompleted = false;
     private Canvas canvas;
+    private ParticleSystem currentParticleSystem = null;
     public bool IsLampOn => lampScript.IsLampOn;
 
     private LampTriggerController trigger;
@@ -27,6 +32,7 @@ public class LampController : MonoBehaviour
     private void Start()
     {
         lampScript = FindAnyObjectByType<LampScript>();
+        lampMaterial.EnableKeyword("_EMISSION");
     }
     public void LearningCompleted()
     {
@@ -60,8 +66,43 @@ public class LampController : MonoBehaviour
 
         canvas = trigger.GetComponentInChildren<Canvas>(true);
         canvas.gameObject.SetActive(true);
+        Transform parent = trigger.transform.parent;
+        if (parent != null)
+        {
+            currentParticleSystem = parent.GetComponentInChildren<ParticleSystem>();
+        }
     }
-   
+    private void FadeLampEmissionToRed(float duration = 2f)
+    {
+        if (lampMaterial == null)
+        {
+            Debug.LogWarning("LampController: lampMaterial не назначен.");
+            return;
+        }
+
+        if (emissionCoroutine != null)
+        {
+            StopCoroutine(emissionCoroutine);
+        }
+
+        emissionCoroutine = StartCoroutine(FadeEmissionCoroutine(targetEmissionColor, duration));
+    }
+    private IEnumerator FadeEmissionCoroutine(Color targetColor, float duration)
+    {
+        Color startColor = lampMaterial.GetColor("_EmissionColor");
+        float timer = 0f;
+
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / duration);
+            Color currentColor = Color.Lerp(startColor, targetColor, t);
+            lampMaterial.SetColor("_EmissionColor", currentColor);
+            yield return null;
+        }
+
+        lampMaterial.SetColor("_EmissionColor", targetColor);
+    }
     private void OnPlayerExitLampZone(LampTriggerController currentTrigger)
     {
         if (canvas.gameObject.activeSelf)
@@ -107,11 +148,41 @@ public class LampController : MonoBehaviour
     }
     public void ResetBarAndFuel()
     {
+        if (currentParticleSystem != null)
+            StartCoroutine(FadeOutParticles(currentParticleSystem, 1.5f)); // 1.5 секунды на затухание
+        FadeLampEmissionToRed();
         barScript.ResetBar();
         StateCanUseLamp(true);
         lampScript.ResetIntensity();
+
         SetLampState(true); // включить лампу
     }
+    private IEnumerator FadeOutParticles(ParticleSystem ps, float duration)
+    {
+        var emission = ps.emission;
+        float startRate = emission.rateOverTime.constant;
+        float timer = 0f;
+
+        while (timer < duration)
+        {
+            float t = timer / duration;
+            float newRate = Mathf.Lerp(startRate, 0f, t);
+
+            var rateOverTime = emission.rateOverTime;
+            rateOverTime.constant = newRate;
+            emission.rateOverTime = rateOverTime;
+
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        // Отключить систему полностью
+        var finalRate = emission.rateOverTime;
+        finalRate.constant = 0f;
+        emission.rateOverTime = finalRate;
+        ps.Stop();
+    }
+
     public void DisableLampBar()
     {
         barScript.DisableBar();
