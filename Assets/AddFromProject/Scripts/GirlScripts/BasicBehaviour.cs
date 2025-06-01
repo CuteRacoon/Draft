@@ -81,6 +81,7 @@ public class BasicBehaviour : MonoBehaviour
     {
         lastDirection = Vector3.zero;
     }
+
     void Update()
     {
         if (behaviourLocked != 0)
@@ -319,6 +320,17 @@ public class BasicBehaviour : MonoBehaviour
             behaviourLocked = 0;
         }
     }
+    public void SetSprintAllowed(bool state)
+    {
+        foreach (GenericBehaviour behaviour in behaviours)
+        {
+            behaviour.SetCanSprint(state);
+        }
+        foreach (GenericBehaviour behaviour in overridingBehaviours)
+        {
+            behaviour.SetCanSprint(state);
+        }
+    }
 
     // Common functions to any behaviour:
 
@@ -436,7 +448,10 @@ public abstract class GenericBehaviour : MonoBehaviour
     {
         return behaviourCode;
     }
-
+    public void SetCanSprint(bool value)
+    {
+        canSprint = value;
+    }
     // Check if the behaviour allows sprinting.
     public bool AllowSprint()
     {

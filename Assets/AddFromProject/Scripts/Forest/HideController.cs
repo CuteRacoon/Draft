@@ -5,7 +5,7 @@ using System.Collections;
 public class HideController : MonoBehaviour
 {
     private Canvas canvas;
-    private HideTriggerController trigger;
+    private HideTrigger trigger;
     private ForestActionController action;
 
     private bool isHidden = false;
@@ -15,14 +15,14 @@ public class HideController : MonoBehaviour
 
     private void OnEnable()
     {
-        HideTriggerController.OnHideTriggerEnter += OnPlayerEnterHideZone;
-        HideTriggerController.OnHideTriggerExit += OnPlayerExitHideZone;
+        HideTrigger.OnHideTriggerEnter += OnPlayerEnterHideZone;
+        HideTrigger.OnHideTriggerExit += OnPlayerExitHideZone;
     }
     private void Start()
     {
         action = FindAnyObjectByType<ForestActionController>();
     }
-    private void OnPlayerEnterHideZone(HideTriggerController currentTrigger)
+    private void OnPlayerEnterHideZone(HideTrigger currentTrigger)
     {
         trigger = currentTrigger;
         currentTriggerIndex = trigger.index;
@@ -63,7 +63,7 @@ public class HideController : MonoBehaviour
         actualIndex = currentTriggerIndex * 2 + 1;
         ForestCameraManager.Instance.SwitchToHidingCamera(actualIndex);
     }
-    private void OnPlayerExitHideZone(HideTriggerController currentTrigger)
+    private void OnPlayerExitHideZone(HideTrigger currentTrigger)
     {
         if (canvas.gameObject.activeSelf)
         {

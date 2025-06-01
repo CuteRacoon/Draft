@@ -17,7 +17,7 @@ public class LampController : MonoBehaviour
     private ParticleSystem currentParticleSystem = null;
     public bool IsLampOn => lampScript.IsLampOn;
 
-    private LampTriggerController trigger;
+    private LampTrigger trigger;
     public static LampController Instance { get; private set; }
     private void Awake()
     {
@@ -40,8 +40,8 @@ public class LampController : MonoBehaviour
     }
     private void OnEnable()
     {
-        LampTriggerController.OnLampTriggerEnter += OnPlayerEnterLampZone;
-        LampTriggerController.OnLampTriggerExit += OnPlayerExitLampZone;
+        LampTrigger.OnLampTriggerEnter += OnPlayerEnterLampZone;
+        LampTrigger.OnLampTriggerExit += OnPlayerExitLampZone;
 
         GameEvents.CanDisplayLampBar += EnableLampBar;
         GameEvents.CannotDisplayLampBar += DisableLampBar;
@@ -56,10 +56,10 @@ public class LampController : MonoBehaviour
 
     private void OnDisable()
     {
-        LampTriggerController.OnLampTriggerEnter -= OnPlayerEnterLampZone;
-        LampTriggerController.OnLampTriggerExit -= OnPlayerExitLampZone;
+        LampTrigger.OnLampTriggerEnter -= OnPlayerEnterLampZone;
+        LampTrigger.OnLampTriggerExit -= OnPlayerExitLampZone;
     }
-    private void OnPlayerEnterLampZone(LampTriggerController currentTrigger)
+    private void OnPlayerEnterLampZone(LampTrigger currentTrigger)
     {
         trigger = currentTrigger;
         playerInsideTrigger = true;
@@ -103,7 +103,7 @@ public class LampController : MonoBehaviour
 
         lampMaterial.SetColor("_EmissionColor", targetColor);
     }
-    private void OnPlayerExitLampZone(LampTriggerController currentTrigger)
+    private void OnPlayerExitLampZone(LampTrigger currentTrigger)
     {
         if (canvas.gameObject.activeSelf)
         {

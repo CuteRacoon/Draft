@@ -4,9 +4,17 @@ public class PlayerController : MonoBehaviour
 {
     private Animator animator;
     private BasicBehaviour basicBehaviour;
+    private MoveBehaviour moveBehaviour;
     private bool canMove = true;
     private bool playerInsideOfTrigger = false;
     private bool isPositionLocked = false;
+
+    public static PlayerController Instance { get ; private set; }
+    private void OnEnable()
+    {
+        GameEvents.NeedToStopSprint += HandleSprintStop;
+        GameEvents.NeedToStartSprint += HandleSprintStart;
+    }
 
     public void LockPosition(bool state)
     {
@@ -19,8 +27,34 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        // Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        Instance = this;
         animator = GetComponent<Animator>();
-        basicBehaviour = FindAnyObjectByType<BasicBehaviour>();
+        basicBehaviour = gameObject.GetComponent<BasicBehaviour>();
+        moveBehaviour = gameObject.GetComponent<MoveBehaviour>();
+    }
+    public void SetSprintEnable(bool state)
+    {
+        basicBehaviour.SetSprintAllowed(state); // если state == true, то запрещаем спринт
+    }
+    public void SetNewMovementSpeeds(float newWalkSpeed, float newRunSpeed, float newSprintSpeed)
+    {
+        moveBehaviour.walkSpeed = newWalkSpeed;
+        moveBehaviour.runSpeed = newRunSpeed;
+        moveBehaviour.sprintSpeed = newSprintSpeed;
+    }
+    private void HandleSprintStop()
+    {
+        SetSprintEnable(false);
+    }
+    private void HandleSprintStart()
+    {
+        SetSprintEnable(true);
     }
     public bool GetPlayerInside()
     {

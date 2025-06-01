@@ -16,6 +16,9 @@ public class ForestCameraManager : MonoBehaviour
     [Header("Камеры монстра")]
     public Camera[] monsterCameras;
 
+    [Header("Камера убегания")]
+    public Camera runAwayCamera;
+
     private Camera currentCamera;
     private void Awake()
     {
@@ -47,6 +50,18 @@ public class ForestCameraManager : MonoBehaviour
         DeactivateAllCameras();
         playerCamera.gameObject.SetActive(true);
         currentCamera = playerCamera;
+    }
+    public void SwitchToRunAwayCamera()
+    {
+        /*if (currentCamera != null && runAwayCamera != null)
+        {
+            runAwayCamera.transform.position = currentCamera.transform.position;
+            runAwayCamera.transform.rotation = currentCamera.transform.rotation;
+        }
+        */
+        DeactivateAllCameras();
+        runAwayCamera.gameObject.SetActive(true);
+        currentCamera = runAwayCamera;
     }
     public void SwitchToHidingCamera(int index)
     {
@@ -84,6 +99,8 @@ public class ForestCameraManager : MonoBehaviour
         DisableArray(dialogueCameras);
         DisableArray(hidingCameras);
         DisableArray(monsterCameras);
+        if (runAwayCamera != null)
+            runAwayCamera.gameObject.SetActive(false);
     }
     private void DisableArray(Camera[] cams)
     {

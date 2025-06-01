@@ -4,7 +4,7 @@ using System.Collections;
 public class ForestDialogueController : MonoBehaviour
 {
     private DialogueManager dialogueManager;
-    private DialogueTriggerController trigger;
+    private DialogueTrigger trigger;
 
     private Canvas canvas;
     private GameObject[] lightObjects;
@@ -21,8 +21,8 @@ public class ForestDialogueController : MonoBehaviour
     void Start()
     {
         dialogueManager = FindAnyObjectByType<DialogueManager>();
-        DialogueTriggerController.OnDialogueTriggerEnter += OnPlayerEnterDialogueZone;
-        DialogueTriggerController.OnDialogueTriggerExit += OnPlayerExitDialogueZone;
+        DialogueTrigger.OnDialogueTriggerEnter += OnPlayerEnterDialogueZone;
+        DialogueTrigger.OnDialogueTriggerExit += OnPlayerExitDialogueZone;
 
         int triggerCount = dialogueTriggers.Length;
         lightObjects = new GameObject[triggerCount];
@@ -60,7 +60,7 @@ public class ForestDialogueController : MonoBehaviour
             }
         }
     }
-    private void OnPlayerEnterDialogueZone(DialogueTriggerController currentTrigger)
+    private void OnPlayerEnterDialogueZone(DialogueTrigger currentTrigger)
     {
         trigger = currentTrigger;
         playerInsideTrigger = true;
@@ -71,7 +71,7 @@ public class ForestDialogueController : MonoBehaviour
 
         StartCoroutine(FadeLightsForTrigger(currentTriggerIndex, 2f, true)); // Плавно включаем
     }
-    private void OnPlayerExitDialogueZone(DialogueTriggerController currentTrigger)
+    private void OnPlayerExitDialogueZone(DialogueTrigger currentTrigger)
     {
         trigger = null;
         playerInsideTrigger = false;

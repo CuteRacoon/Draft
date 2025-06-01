@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using System;
+using Unity.VisualScripting;
 
 public class MonsterSceneController : MonoBehaviour
 {
@@ -16,10 +17,22 @@ public class MonsterSceneController : MonoBehaviour
     public float teleportDistanceZ = 20f;
     public float runDuration = 3f;
 
-    private MonsterTriggerController currentTrigger;
+    private MonsterTrigger currentTrigger;
     private int currentTriggerIndex = -1;
     private bool lampState;
     private GameObject canvasObj;
+
+    public static MonsterSceneController Instance { get; private set; }
+    private void OnAwake()
+    {
+        // Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -36,13 +49,13 @@ public class MonsterSceneController : MonoBehaviour
             stayingGirls[i] = child;
             child.gameObject.SetActive(false);
         }
-        MonsterTriggerController.OnMonsterTriggerEnter += HandlePlayerEnterTrigger;
+        MonsterTrigger.OnMonsterTriggerEnter += HandlePlayerEnterTrigger;
     }
     void OnDestroy()
     {
-        MonsterTriggerController.OnMonsterTriggerEnter -= HandlePlayerEnterTrigger;
+        MonsterTrigger.OnMonsterTriggerEnter -= HandlePlayerEnterTrigger;
     }
-    void HandlePlayerEnterTrigger(MonsterTriggerController trigger)
+    void HandlePlayerEnterTrigger(MonsterTrigger trigger)
     {
         currentTrigger = trigger;
         currentTriggerIndex = trigger.index;
